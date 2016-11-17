@@ -7,6 +7,7 @@ import plotter.d3.Vector3D;
 import tools.VectorConversions;
 
 
+@SuppressWarnings("unused")
 public class SolarSystem {
 	
 	double scale = 3.0E11;    //7009100d

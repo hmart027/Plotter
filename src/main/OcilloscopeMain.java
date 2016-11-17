@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 
 //import com.protocol.Protocol;
 
+
 import msg.CheckSum;
 import msg.MAVLink;
 import msg.MAVLinkTypes.MAV_MESSAGE;
@@ -25,6 +26,7 @@ import tools.VectorConversions;
 import bytetools.ByteTools;
 
 
+@SuppressWarnings("unused")
 public class OcilloscopeMain{		
 	
 //	static Protocol msgHandler = new Protocol();
