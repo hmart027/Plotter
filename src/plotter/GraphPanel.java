@@ -403,12 +403,6 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			this.repaint();
 	}
 
-	public void clearPlots() {
-		plots.clear();
-		lastPlot = -1;
-		repaint();
-	}
-
 	public int setPlot(int pIndex, double[] x, double[] y, Color c, boolean resize) {
 		return setPlot(pIndex, 0, 0, x, y, c, resize);
 	}
@@ -452,6 +446,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		repaint();
 		return lastPlot;
 	}
+	
+	public void removePlot(int index){
+		if(index<0 || index>=plots.size()) return;
+		plots.remove(index);
+		repaint();
+	}
 
 	public int addPlot(double[] x, double[] y, Color c, boolean resize) {
 		return setPlot(plots.size(), x, y, c, resize);
@@ -494,10 +494,23 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		lines.clear();
 	}
 
+	public void clearPlots() {
+		plots.clear();
+		lastPlot = -1;
+		repaint();
+	}
+	
+	public void clearPoints() {
+		points.clear();
+		repaint();
+	}
+	
 	// Clears all graphs
 	public void clearAll() {
-		while (plots.size() > 0)
-			plots.remove(0);
+		plots.clear();
+		lastPlot = -1;
+		lines.clear();
+		points.clear();
 		repaint();
 	}
 
