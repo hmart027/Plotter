@@ -98,14 +98,21 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	private final ArrayList<Point> circles = new ArrayList<>();
 		
 
-	public GraphPanel(){};
+	public GraphPanel(){
+		this(new Dimension(50, 50));
+	};
 	
 	public GraphPanel(int width, int height){
-		this.init(width, height);
+		this(new Dimension(width, height));
 	}
 	
 	public GraphPanel(Dimension dim) {
 		this.init(dim);
+		this.setFocusable(true);
+		this.addKeyListener(this);
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
+		this.addMouseWheelListener(this);
 	}
 	
 	/**
@@ -124,23 +131,20 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	protected void init(Dimension dim){
 		this.dim = dim;
 		this.setPreferredSize(dim);
-		this.setFocusable(true);
-		this.addKeyListener(this);
-		this.addMouseListener(this);
-		this.addMouseMotionListener(this);
-		this.addMouseWheelListener(this);
-
 		gHeight = dim.height;
 		gWidth = dim.width;
-		setD2P();
 		setAxisCordinates();
+	}
+	
+	@Override
+	public void setBounds(int x, int y, int width, int height){
+		super.setBounds(x, y, width, height);
+		this.init(width, height);
 	}
 		
 		//Method to paint
+	@Override
 	public void paint(Graphics g) {
-		if(dim==null || !dim.equals(getSize())){
-			this.init(getSize());
-		}
 		Graphics2D g2 = (Graphics2D)g;
 		setAxisCordinates();
 		setD2P();
