@@ -20,4 +20,12 @@ public class Point{
 		this.y = y;
 		this.c = c;
 	}
+	
+	public double getX(){
+		return this.x;
+	}
+	
+	public double getY(){
+		return this.y;
+	}
 }

@@ -92,6 +92,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 
 	// Points
 	int pointRad = 3;
+	boolean fillPoint = true;
 	private final ArrayList<Point> points = new ArrayList<>();
 	
 	// Circle
@@ -184,11 +185,20 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		 }
 		 
 		 //Loop through all the points
-		 for(int i=0; i<points.size(); i++){
-			 Point p = points.get(i);
-			 g.setColor(p.c);
-			 if (!(p.x>maxX || p.x<minX || p.y>maxY || p.y<minY))
-				 g.fillOval(xVal(p.x)-pointRad/2, yVal(p.y)-pointRad/2, pointRad, pointRad);
+		 if(fillPoint){
+			 for(int i=0; i<points.size(); i++){
+				 Point p = points.get(i);
+				 g.setColor(p.c);
+				 if (!(p.x>maxX || p.x<minX || p.y>maxY || p.y<minY))
+					 g.fillOval(xVal(p.x)-pointRad/2, yVal(p.y)-pointRad/2, pointRad, pointRad);
+			 }
+		 }else{
+			 for(int i=0; i<points.size(); i++){
+				 Point p = points.get(i);
+				 g.setColor(p.c);
+				 if (!(p.x>maxX || p.x<minX || p.y>maxY || p.y<minY))
+					 g.drawOval(xVal(p.x)-pointRad/2, yVal(p.y)-pointRad/2, pointRad, pointRad);
+			 }
 		 }
 		 
 		 //Draw the cursor
@@ -591,6 +601,11 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		if (rad <= 0)
 			return;
 		this.pointRad = rad;
+		repaint();
+	}
+	
+	public void setPointFill(boolean fillPoint) {
+		this.fillPoint = fillPoint;
 		repaint();
 	}
 		
