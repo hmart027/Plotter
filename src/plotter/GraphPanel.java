@@ -41,6 +41,8 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	private boolean dashed = true;
 	private boolean labels = true;
 	private boolean drawAxis = true;
+	private boolean drawVerticalAxis = true;
+	private boolean drawHorizontalAxis = true;
 
 	private boolean autoRefresh = false;
 	private boolean autoXScroll = false;
@@ -154,7 +156,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		setD2P();
 		gHeight=dim.height;
 		gWidth =gHeight;
-	    background (g);
+	    background(g);
 		    			
 		//Loop to draw all lines in the list
 		 for (int i = 0; i<lines.size(); i++) {
@@ -252,103 +254,106 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	 */
 	private void drawAxisMarcs(Graphics g) {
 		g.setColor(gridColor);
-		double current = 0;
-		double next = 0;
+		double current = 0, next = 0, exp = 0;
 		int xL = (int) (dim.height * 0.02 / 2);
-		// Drawing delta X to +
-		next = minX + axisX/d2pX + dX;
-		current = 0;
-		double exp = Math.pow(10, Math.abs(Math.getExponent(dX)));
-		for (int c = axisX; c < dim.width - 1; c++) {
-			current = (c - originX) / d2pX;
-			if (current >= next) {
-				if (!(c >= (axisX - 1) && c <= (axisX + 1))) {
-					if (grid)
-						g.drawLine(c, 0, c, gHeight);
-					else
-						g.drawLine(c, axisY - xL, c, axisY + xL);
-					if (labels) {
-						String label = Math.round(current*exp)/exp+"";
-						if(xAxisLabler!=null) label = xAxisLabler.getLabel(current);
-						if(axisY<=gHeight/2)
-							g.drawString(label, c - 10, axisY + xL + 12);
+		if(drawHorizontalAxis){
+			// Drawing delta X to +
+			next = minX + axisX/d2pX + dX;
+			current = 0;
+			exp = Math.pow(10, Math.abs(Math.getExponent(dX)));
+			for (int c = axisX; c < dim.width - 1; c++) {
+				current = (c - originX) / d2pX;
+				if (current >= next) {
+					if (!(c >= (axisX - 1) && c <= (axisX + 1))) {
+						if (grid)
+							g.drawLine(c, 0, c, gHeight);
 						else
-							g.drawString(label, c - 10, axisY - xL - 5);
+							g.drawLine(c, axisY - xL, c, axisY + xL);
+						if (labels) {
+							String label = Math.round(current*exp)/exp+"";
+							if(xAxisLabler!=null) label = xAxisLabler.getLabel(current);
+							if(axisY<=gHeight/2)
+								g.drawString(label, c - 10, axisY + xL + 12);
+							else
+								g.drawString(label, c - 10, axisY - xL - 5);
+						}
 					}
+					next += dX;
 				}
-				next += dX;
+			}
+			// Drawing delta X to -
+			next = minX + axisX/d2pX - dX;		
+			current = 0;
+			for (int c = axisX; c > 0; c--) {
+				current = (c - originX) / d2pX;
+				if (current <= next) {
+					if (!(c >= (axisX - 1) && c <= (axisX + 1))) {
+						if (grid)
+							g.drawLine(c, 0, c, gHeight);
+						else
+							g.drawLine(c, axisY - xL, c, axisY + xL);
+						if (labels) {
+							String label = Math.round(current*exp)/exp+"";
+							if(xAxisLabler!=null) label = xAxisLabler.getLabel(current);
+							if(axisY<=gHeight/2)
+								g.drawString(label, c - 10, axisY + xL + 12);
+							else
+								g.drawString(label, c - 10, axisY - xL - 5);
+						}
+					}
+					next -= dX;
+				}
 			}
 		}
-		// Drawing delta X to -
-		next = minX + axisX/d2pX - dX;		
-		current = 0;
-		for (int c = axisX; c > 0; c--) {
-			current = (c - originX) / d2pX;
-			if (current <= next) {
-				if (!(c >= (axisX - 1) && c <= (axisX + 1))) {
-					if (grid)
-						g.drawLine(c, 0, c, gHeight);
-					else
-						g.drawLine(c, axisY - xL, c, axisY + xL);
-					if (labels) {
-						String label = Math.round(current*exp)/exp+"";
-						if(xAxisLabler!=null) label = xAxisLabler.getLabel(current);
-						if(axisY<=gHeight/2)
-							g.drawString(label, c - 10, axisY + xL + 12);
+		if(drawVerticalAxis){
+			// Drawing delta y to +
+			next = maxY - axisY/d2pY + dY;
+			current = 0;
+			exp = Math.pow(10, Math.abs(Math.getExponent(dY)));
+			for (int c = axisY; c > 0; c--) {
+				current = (originY - c) / d2pY;
+				if (current >= next) {
+					if (!(c >= (axisY - 1) && c <= (axisY + 1))) {
+						if (grid)
+							g.drawLine(0, c, dim.width, c);
 						else
-							g.drawString(label, c - 10, axisY - xL - 5);
+							g.drawLine(axisX - xL, c, axisX + xL, c);
+						if (labels) {
+							String label = Math.round(current*exp)/exp+"";
+							if(yAxisLabler!=null) label = yAxisLabler.getLabel(current);
+							int l = label.length()*5;
+							if(axisX<gWidth/2)
+								g.drawString(label, axisX + xL + 10, c + 5);
+							else
+								g.drawString(label, axisX - xL - 10 - l, c + 5);
+						}
 					}
+					next += dY;
 				}
-				next -= dX;
 			}
-		}
-		// Drawing delta y to +
-		next = maxY - axisY/d2pY + dY;
-		current = 0;
-		exp = Math.pow(10, Math.abs(Math.getExponent(dY)));
-		for (int c = axisY; c > 0; c--) {
-			current = (originY - c) / d2pY;
-			if (current >= next) {
-				if (!(c >= (axisY - 1) && c <= (axisY + 1))) {
-					if (grid)
-						g.drawLine(0, c, dim.width, c);
-					else
-						g.drawLine(axisX - xL, c, axisX + xL, c);
-					if (labels) {
-						String label = Math.round(current*exp)/exp+"";
-						if(yAxisLabler!=null) label = yAxisLabler.getLabel(current);
-						int l = label.length()*5;
-						if(axisX<gWidth/2)
-							g.drawString(label, axisX + xL + 10, c + 5);
+			// Drawing delta y to -
+			next = maxY - axisY/d2pY - dY;
+			current = 0;
+			for (int c = axisY; c < dim.height - 1; c++) {
+				current = (originY - c) / d2pY;
+				if (current <= next) {
+					if (!(c >= (axisY - 1) && c <= (axisY + 1))) {
+						if (grid)
+							g.drawLine(0, c, dim.width, c);
 						else
-							g.drawString(label, axisX - xL - 10 - l, c + 5);
+							g.drawLine(axisX - xL, c, axisX + xL, c);
+						if (labels) {
+							String label = Math.round(current*exp)/exp+"";
+							if(yAxisLabler!=null) label = yAxisLabler.getLabel(current);
+							int l = label.length()*5;
+							if(axisX<gWidth/2)
+								g.drawString(label, axisX + xL + 10, c + 5);
+							else
+								g.drawString(label, axisX - xL - 10 - l, c + 5);
+						}
 					}
+					next -= dY;
 				}
-				next += dY;
-			}
-		}
-		// Drawing delta y to -
-		next = maxY - axisY/d2pY - dY;
-		current = 0;
-		for (int c = axisY; c < dim.height - 1; c++) {
-			current = (originY - c) / d2pY;
-			if (current <= next) {
-				if (!(c >= (axisY - 1) && c <= (axisY + 1))) {
-					if (grid)
-						g.drawLine(0, c, dim.width, c);
-					else
-						g.drawLine(axisX - xL, c, axisX + xL, c);
-					if (labels) {
-						String label = Math.round(current*exp)/exp+"";
-						if(yAxisLabler!=null) label = yAxisLabler.getLabel(current);
-						int l = label.length()*5;
-						if(axisX<gWidth/2)
-							g.drawString(label, axisX + xL + 10, c + 5);
-						else
-							g.drawString(label, axisX - xL - 10 - l, c + 5);
-					}
-				}
-				next -= dY;
 			}
 		}
 		
@@ -613,16 +618,28 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 		
 	public void setMaxX(double max) {
-		if (max <= this.minX)
-			return;
-		this.maxX = max;
-		setAxisCordinates();
+		setMaxX(max, false);
 	}
 
 	public void setMinX(double min) {
+		setMinX(min, false);
+	}
+	
+	public void setMaxX(double max, boolean computeDeltaX) {
+		if (max <= this.minX)
+			return;
+		this.maxX = max;
+		if(computeDeltaX)
+			this.dX = (this.maxX-this.minX)*0.1;
+		setAxisCordinates();
+	}
+	
+	public void setMinX(double min, boolean computeDeltaX) {
 		if (min >= this.maxX)
 			return;
 		this.minX = min;
+		if(computeDeltaX)
+			this.dX = (this.maxX-this.minX)*0.1;
 		setAxisCordinates();
 	}
 
@@ -632,16 +649,28 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 		
 	public void setMaxY(double max) {
+		setMaxY(max, false);
+	}
+	
+	public void setMinY(double min) {
+		setMinY(min, false);
+	}
+	
+	public void setMaxY(double max, boolean computeDeltaY) {
 		if (max <= this.minY)
 			return;
 		this.maxY = max;
+		if(computeDeltaY)
+			this.dY = (this.maxY-this.minY)*0.1;
 		setAxisCordinates();
 	}
-		
-	public void setMinY(double min) {
+	
+	public void setMinY(double min, boolean computeDeltaY) {
 		if (min >= this.maxY)
 			return;
 		this.minY = min;
+		if(computeDeltaY)
+			this.dY = (this.maxY-this.minY)*0.1;
 		setAxisCordinates();
 	}
 		
@@ -673,6 +702,16 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	public void showGrid(boolean grid) {
 		this.grid = grid;
 		this.repaint();
+	}
+	
+	public void showVerticalAxis(boolean show){
+		this.drawVerticalAxis = show;
+		repaint();
+	}
+	
+	public void showHorizontalAxis(boolean show){
+		this.drawHorizontalAxis = show;
+		repaint();
 	}
 		
 	public void setAutoRefresh(boolean autoRefresh){
