@@ -17,6 +17,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -47,13 +49,14 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	int gHeight;
 
 	// Cursor Variables
-	private boolean cursorInWindow 	= false;
-	private boolean useCursor 		= true;
-	private boolean useVCursor 		= false;
-	private boolean useVCursorLabel = false;
+	private boolean cursorInWindow 	   = false;
+	private boolean usePermanentCursor = false;
+	private boolean useCursor 		   = true;
+	private boolean useVCursor 		   = false;
+	private boolean useVCursorLabel    = false;
 	private double 	vCursorRoundingVal = 1000;
-	private boolean useHCursor 		= true;
-	private boolean useHCursorLabel = true;
+	private boolean useHCursor 		   = true;
+	private boolean useHCursorLabel    = true;
 	private double 	hCursorRoundingVal = 1000;
 	private double cX = 0;
 	private double cY = 0;
@@ -202,7 +205,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		 }
 		 
 		 //Draw the cursor
-		 if(useCursor && cursorInWindow){
+		 if(useCursor && (cursorInWindow || usePermanentCursor)){
 			 g.setColor(cursorColor);
 			 if(useVCursor){
 				 g.drawLine(0, (int)cY, gWidth, (int)cY);
@@ -672,8 +675,13 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		this.repaint();
 	}
 		
-	public void setAutoRefresh(boolean autoRefresh){this.autoRefresh = autoRefresh;}
-	public void setAutoXScroll(boolean autoScroll){this.autoXScroll = autoScroll;}
+	public void setAutoRefresh(boolean autoRefresh){
+		this.autoRefresh = autoRefresh;
+	}
+	
+	public void setAutoXScroll(boolean autoScroll){
+		this.autoXScroll = autoScroll;
+	}
 		
 	private void setAxisCordinates() {
 		setD2P();
@@ -710,11 +718,25 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		return out;
 	}
 		
-	public double getMaxX(){return this.maxX;}
-	public double getMinX(){return this.minX;}
-	public double getMaxY(){return this.maxY;}
-	public double getMinY(){return this.minY;}
-	public boolean isRefreshing(){return this.autoRefresh;};
+	public double getMaxX(){
+		return this.maxX;
+	}
+	
+	public double getMinX(){
+		return this.minX;
+	}
+	
+	public double getMaxY(){
+		return this.maxY;
+	}
+	
+	public double getMinY(){
+		return this.minY;
+	}
+	
+	public boolean isRefreshing(){
+		return this.autoRefresh;
+	};
 		
 	public void drawAxis(boolean drawAxis) {
 		this.drawAxis = drawAxis;
@@ -730,142 +752,183 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		return false;
 	}
 			
-		@Override
-		public void keyPressed(KeyEvent e) {
-//			System.out.println("p: "+e.getKeyCode());
-			switch (e.getKeyCode()) {
-			case 17:{
-				cntlrP = true;
-				break;
-			}
-			case 18:{
-				altP = true;
-				break;
-			}
-			case 38:{ // UP
-				double dy = (maxY - minY) * 0.05;
-				maxY += dy;
-				minY  += dy;
-				repaint();
-				break;
-			}
-			case 40:{ // DOWN
-				double dy = (maxY - minY) * 0.05;
-				maxY -= dy;
-				minY  -= dy;
-				repaint();
-				break;
-			}
-			case 39:{
-				double dx = (maxX - minX) * 0.05;
-				maxX += dx;
-				minX  += dx;
-				repaint();
-				break;
-			}
-			case 37:{
-				double dx = (maxX - minX) * 0.05;
-				maxX -= dx;
-				minX  -= dx;
-				repaint();
-				break;
-			}
-
-			default:
-				break;
-			}
+	public void moveRight(){
+		double dx = (maxX - minX) * 0.05;
+		maxX += dx;
+		minX  += dx;
+		repaint();
+	}
+	
+	public void moveLeft(){
+		double dx = (maxX - minX) * 0.05;
+		maxX -= dx;
+		minX  -= dx;
+		repaint();
+	}
+	
+	public void moveUp(){
+		double dy = (maxY - minY) * 0.05;
+		maxY += dy;
+		minY  += dy;
+		repaint();
+	}
+	
+	public void moveDown(){
+		double dy = (maxY - minY) * 0.05;
+		maxY -= dy;
+		minY  -= dy;
+		repaint();
+	}
+	
+	/**
+	 * Magnifies the plot. The expected values are the magnifications for the x and y axis. Positive 
+	 * magnification values will zoom in while negative values will zoom out. A value of 0.1 indicates 
+	 * a 10% magnification.
+	 * @param zX magnification along the x-axis (i.e. 0.1 is a 10% zoom in). 
+	 * @param zY magnification along the y-axis (i.e. 0.1 is a 10% zoom in).
+	 */
+	public void zoom(double zX, double zY){
+		double dx = (maxX - minX) * zX;
+		double dy = (maxY - minY) * zY;
+		maxX -= dx*0.5;
+		minX += dx*0.5;
+		maxY -= dy*0.5;
+		minY += dy*0.5;
+		this.dY = (maxY - minY) / 10d;
+		this.dX = (maxX - minX) / 10d;
+		repaint();
+	}
+	
+	public void setCursorLocation(int x, int y){
+		cX = x;
+		cY = y;
+		repaint();	
+	}
+	
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// System.out.println("p: "+e.getKeyCode());
+		switch (e.getKeyCode()) {
+		case 17: {
+			cntlrP = true;
+			break;
 		}
-		
-		@Override
-		public void keyReleased(KeyEvent e) {
-			switch (e.getKeyCode()) {
-			case 17:{
-				cntlrP = false;
-				break;
-				}
-			case 18:{
-				altP = false;
-				break;
-				}
-			}
+		case 18: {
+			altP = true;
+			break;
 		}
-		
-		@Override
-		public void keyTyped(KeyEvent e) {}
-		
-		@Override
-		public void mouseClicked(MouseEvent e) {}
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			cursorInWindow = true;
+		case 38: { // UP
+			moveUp();
+			break;
 		}
-		@Override
-		public void mouseExited(MouseEvent e) {
-			cursorInWindow = false;
-			repaint();
+		case 40: { // DOWN
+			moveDown();
+			break;
 		}
-		@Override
-		public void mousePressed(MouseEvent e) {
-			this.requestFocusInWindow();
+		case 39: {
+			moveRight();
+			break;
 		}
-		@Override
-		public void mouseReleased(MouseEvent e) {}
-		
-		@Override
-		public void mouseWheelMoved(MouseWheelEvent e) {
-//			System.out.println(e.getWheelRotation());
-			if(cntlrP){
-				double dx = (maxX-minX)*0.1;
-				double dy = (maxY-minY)*0.1;
-				if(e.getWheelRotation()>0){
-					maxX += dx;
-					minX -= dx;
-				}else{
-					maxX -= dx;
-					minX += dx;
-				}
-				this.dY = (maxY-minY)/10d;
-				this.dX = (maxX-minX)/10d;
-				repaint();
-			}
-			if(altP){
-				double dx = (maxX-minX)*0.1;
-				double dy = (maxY-minY)*0.1;
-				if(e.getWheelRotation()>0){
-					maxY += dy;
-					minY -= dy;
-				}else{
-					maxY -= dy;
-					minY += dy;
-				}
-				this.dY = (maxY-minY)/10d;
-				this.dX = (maxX-minX)/10d;
-				repaint();
-			}
+		case 37: {
+			moveLeft();
+			break;
 		}
 
-		@Override
-		public void mouseDragged(MouseEvent e) {}
-		@Override
-		public void mouseMoved(MouseEvent e) {
-			cX=e.getX();
-			cY=e.getY();
-			repaint();
+		default:
+			break;
 		}
+	}
 		
-		public void useCursor(boolean use){
-			useCursor = use;
+	@Override
+	public void keyReleased(KeyEvent e) {
+		switch (e.getKeyCode()) {
+		case 17: {
+			cntlrP = false;
+			break;
 		}
-		public void useHorizontalCursor(boolean use){
-			useHCursor = use;
+		case 18: {
+			altP = false;
+			break;
 		}
-		public void useHorizontalCursorLabler(boolean use){
-			useHCursorLabel = use;
 		}
-		public void useVerticalCursor(boolean use){
-			useVCursor = use;
+	}
+		
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		cursorInWindow = true;
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		cursorInWindow = false;
+		repaint();
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		this.requestFocusInWindow();
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {}
+		
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		// System.out.println(e.getWheelRotation());
+		if (cntlrP) {
+			if (e.getWheelRotation() > 0) {
+				zoom(-0.1, 0);
+			} else {
+				zoom(0.1/1.1, 0);
+			}
 		}
-		public void useVerticalCursorLabler(boolean use){
-			useVCursorLabel = use;
+		if (altP) {
+			if (e.getWheelRotation() > 0) {
+				zoom(0,-0.1);
+			} else {
+				zoom(0,0.1/1.1);
+			}
 		}
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		setCursorLocation(e.getX(), e.getY());
+	}
+		
+	public void useCursor(boolean use) {
+		useCursor = use;
+	}
+	
+	public void usePermanentCursor(boolean use){
+		usePermanentCursor = use;
+	}
+
+	public void useHorizontalCursor(boolean use) {
+		useHCursor = use;
+	}
+
+	public void useHorizontalCursorLabler(boolean use) {
+		useHCursorLabel = use;
+	}
+
+	public void useVerticalCursor(boolean use) {
+		useVCursor = use;
+	}
+
+	public void useVerticalCursorLabler(boolean use) {
+		useVCursorLabel = use;
+	}
 }
