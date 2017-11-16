@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -156,7 +157,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		setD2P();
 		gHeight=dim.height;
 		gWidth =gHeight;
-	    background(g);
+		background(g);
 		    			
 		//Loop to draw all lines in the list
 		 for (int i = 0; i<lines.size(); i++) {
@@ -176,16 +177,20 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			 Plot plot = plots.get(i);
 			 if(plot.color==null) plot.color = lineColor;
 			 g.setColor(plot.color);
-			 int lx=xVal(plot.xPlot[0]+plot.xOffset), ly=yVal(plot.yPlot[0]+plot.yOffset), x, y;
-			 for(int p=1; p<plot.yPlot.length; p++){
-				 x=xVal(plot.xPlot[p]+plot.xOffset);
-				 y=yVal(plot.yPlot[p]+plot.yOffset);
-				 if (!((lx>dim.width && x>dim.width) || (lx<0 && x<0) || (ly>dim.height && y>dim.height) || (ly<0 && y<0))){
-					 if(!(x==lx && y==ly))
-						 g.drawLine(lx,ly,x,y);
-				 }
-				 lx=x;
-				 ly=y;
+			 int lx=xVal(plot.xPlot.getFirst()+plot.xOffset), ly=yVal(plot.yPlot.getFirst()+plot.yOffset), x, y;
+			 LinkedList<Double> yValues = plot.yPlot;
+			 LinkedList<Double> xValues = plot.xPlot;
+			 for(int p=1; p<plot.getSize(); p++){
+				x=xVal(xValues.get(p)+plot.xOffset);
+				y=yVal(yValues.get(p)+plot.yOffset);
+				if(x==lx && y==ly)
+					continue;
+				if (!((lx > dim.width && x > dim.width) || (lx < 0 && x < 0) || (ly > dim.height && y > dim.height)
+						|| (ly < 0 && y < 0))) {
+					g.drawLine(lx, ly, x, y);
+				}
+				lx=x;
+				ly=y;
 			 }
 		 }
 		 
@@ -425,6 +430,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			this.repaint();
 	}
 
+	public Plot getPlot(int plotIndex){
+		if(plotIndex<0 || plotIndex>=plots.size())
+			return null;
+		return plots.get(plotIndex);
+	}
+	
 	public int setPlot(int pIndex, double[] x, double[] y, Color c, boolean resize) {
 		return setPlot(pIndex, 0, 0, x, y, c, resize);
 	}
@@ -466,6 +477,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		}
 		lastPlot = pIndex;
 		repaint();
+		lastXRep = plots.get(lastPlot).getLastX();
 		return lastPlot;
 	}
 	
@@ -491,6 +503,24 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		return setPlot(plots.size(), x, y, c, true);
 	}
 
+	double lastXRep = 0;
+	public void addPlotPoint(int plotIndex, double x, double y, boolean autoScroll){
+		if(plotIndex<0 || plotIndex>=plots.size())
+			return;
+		Plot p = plots.get(plotIndex);
+		p.addPoint(x, y);
+		double dX = x-lastXRep;
+		if(autoScroll && x>this.maxX){
+			double inc = x-this.maxX+this.dX;
+			this.minX += inc;
+			this.maxX += inc;
+		}
+		if(dX>10d/this.d2pX){
+			lastXRep = x;
+			repaint();
+		}
+	}
+	
 	public void addPoint(double x, double y, Color c) {
 		points.add(new Point(x, y, c));
 		repaint();
@@ -541,16 +571,9 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 
 	public void fitY(int plotIndex) {
-		double[] yVals = plots.get(plotIndex).yPlot;
-		double tMax = 0, tMin = 0;
-		for (int i = 0; i < yVals.length; i++) {
-			if (yVals[i] > tMax)
-				tMax = yVals[i];
-			if (yVals[i] < tMin)
-				tMin = yVals[i];
-		}
-		maxY = tMax;
-		minY = tMin;
+		Plot p = plots.get(plotIndex);
+		maxY = p.getMaxY();
+		minY = p.getMinY();
 		this.dY = (maxY - minY) / 10d;
 		repaint();
 	}
@@ -560,16 +583,9 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 
 	public void fitX(int plotIndex) {
-		double[] xVals = plots.get(plotIndex).xPlot;
-		double tMax = 0, tMin = 0;
-		for (int i = 0; i < xVals.length; i++) {
-			if (xVals[i] > tMax)
-				tMax = xVals[i];
-			if (xVals[i] < tMin)
-				tMin = xVals[i];
-		}
-		maxX = tMax;
-		minX = tMin;
+		Plot p = plots.get(plotIndex);
+		maxX = p.getMaxX();
+		minX = p.getMinX();
 		this.dX = (maxX - minX) / 10d;
 		repaint();
 	}
