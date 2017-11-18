@@ -177,12 +177,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			 Plot plot = plots.get(i);
 			 if(plot.color==null) plot.color = lineColor;
 			 g.setColor(plot.color);
-			 int lx=xVal(plot.xPlot.getFirst()+plot.xOffset), ly=yVal(plot.yPlot.getFirst()+plot.yOffset), x, y;
-			 LinkedList<Double> yValues = plot.yPlot;
-			 LinkedList<Double> xValues = plot.xPlot;
+			 int lx=xVal(plot.xPlot[0]+plot.xOffset), ly=yVal(plot.yPlot[0]+plot.yOffset), x, y;
+			 double[] yValues = plot.yPlot;
+			 double[] xValues = plot.xPlot;
 			 for(int p=1; p<plot.getSize(); p++){
-				x=xVal(xValues.get(p)+plot.xOffset);
-				y=yVal(yValues.get(p)+plot.yOffset);
+				x=xVal(xValues[p]+plot.xOffset);
+				y=yVal(yValues[p]+plot.yOffset);
 				if(x==lx && y==ly)
 					continue;
 				if (!((lx > dim.width && x > dim.width) || (lx < 0 && x < 0) || (ly > dim.height && y > dim.height)
@@ -477,7 +477,6 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		}
 		lastPlot = pIndex;
 		repaint();
-		lastXRep = plots.get(lastPlot).getLastX();
 		return lastPlot;
 	}
 	
@@ -501,34 +500,6 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			x[i] = i;
 		}
 		return setPlot(plots.size(), x, y, c, true);
-	}
-
-	double lastXRep = 0;
-	public void addPlotPoint(int plotIndex, double x, double y, boolean autoScroll){
-		if(plotIndex<0 || plotIndex>=plots.size())
-			return;
-		Plot p = plots.get(plotIndex);
-		p.addPoint(x, y);
-		double dX = x-lastXRep;
-		if(autoScroll && x>this.maxX){
-			double inc = x-this.maxX+this.dX;
-			this.minX += inc;
-			this.maxX += inc;
-		}
-		if(dX>10d/this.d2pX){
-			lastXRep = x;
-			repaint();
-		}
-	}
-	
-	public void addPoint(double x, double y, Color c) {
-		points.add(new Point(x, y, c));
-		repaint();
-	}
-
-	public void addPoint(double x, double y) {
-		points.add(new Point(x, y));
-		repaint();
 	}
 
 	// Gets the x value in pixel
