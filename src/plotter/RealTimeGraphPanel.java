@@ -2,7 +2,6 @@ package plotter;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.util.List;
 
 public class RealTimeGraphPanel extends GraphPanel {
@@ -11,37 +10,30 @@ public class RealTimeGraphPanel extends GraphPanel {
 
 	private int lastPlot = 0;
 	
-	// Method to paint
-	@Override
-	public void paint(Graphics g) {
-		Graphics2D g2 = (Graphics2D) g;
-		setAxisCordinates();
-		setD2P();
-		gHeight = dim.height;
-		gWidth = gHeight;
-		background(g);
-
-		drawLines(g2);
-		drawPlots(g);
-		drawPoints(g);
-		drawCursor(g);
-	}
-	
+	public RealTimeGraphPanel(){}
+		
 	@Override
 	protected void drawPlots(Graphics g){
 		//Loop through all plots to draw all lines in the array
 		for (int i = 0; i < plots.size(); i++) {
 			RealTimePlot plot = (RealTimePlot)plots.get(i);
+			if(plot==null)
+				continue;
 			if (plot.color == null)
 				plot.color = lineColor;
 			g.setColor(plot.color);
 			List<Double> yValues = plot.yPlot;
 			List<Double> xValues = plot.xPlot;
 			int lx = xVal(xValues.get(0) + plot.xOffset), ly = yVal(yValues.get(0) + plot.yOffset), xi, yi;
-			double x, y;
-			for (int p = 1; p < plot.getSize(); p++) {
-				x = xValues.get(p) + plot.xOffset;
-				y = yValues.get(p) + plot.yOffset;
+			double x=0, y=0;
+			int pS = plot.getSize();
+			for (int p = 1; p < pS; p++) {
+				try{
+					x = xValues.get(p) + plot.xOffset;
+					y = yValues.get(p) + plot.yOffset;
+				}catch(NullPointerException e){
+					continue;
+				}
 				if(x<minX || x>maxX)
 					continue;
 				xi = xVal(x);
@@ -94,7 +86,7 @@ public class RealTimeGraphPanel extends GraphPanel {
 			this.dY = (maxY - minY) / 10d;
 		}
 		lastPlot = pIndex;
-		repaint();
+		refresh = true;
 		return lastPlot;
 	}
 	
@@ -106,7 +98,7 @@ public class RealTimeGraphPanel extends GraphPanel {
 				minX += dx;
 				maxX += dx;
 			}
-			repaint();
+			refresh = true;
 		}
 	}
 	
@@ -119,7 +111,7 @@ public class RealTimeGraphPanel extends GraphPanel {
 				minX += dx;
 				maxX += dx;
 			}
-			repaint();
+			refresh = true;
 		}
 	}
 }

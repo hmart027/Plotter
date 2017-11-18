@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -36,6 +37,9 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	protected Color axisColor = Color.RED;
 	protected Color gridColor = Color.GRAY;
 	protected Color lineColor = Color.BLUE;
+
+	protected boolean refresh = false;
+	protected long refreshPeriod = (long) (1000d/120d);
 
 	// Grid Variables
 	protected boolean grid = false;
@@ -104,7 +108,9 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	// Circle
 	protected final ArrayList<Point> circles = new ArrayList<>();
 		
-
+	// Labels
+	protected final TreeMap<String, GraphPanelLabel> labelList = new TreeMap<>();
+	
 	public GraphPanel(){
 		this(new Dimension(50, 50));
 	};
@@ -120,6 +126,23 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addMouseWheelListener(this);
+		
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while(true){
+					if(refresh){
+						repaint();
+						refresh = false;
+					}
+					try {
+						Thread.sleep(refreshPeriod);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}).start();
 	}
 	
 	/**
@@ -163,9 +186,10 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		drawPlots(g);
 		drawPoints(g);
 		drawCursor(g);
+		drawLabels(g2);
 		
 	}
-	
+		
 	protected void drawLines(Graphics2D g2){
 		//Loop to draw all lines in the list
 		 for (int i = 0; i<lines.size(); i++) {
@@ -251,7 +275,15 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			 }
 		 }
 	}
-		
+	
+	protected void drawLabels(Graphics2D g2){
+		for(GraphPanelLabel l : labelList.values()){
+			String t = l.getLabel()+l.getValue();
+			g2.setColor(l.getColor());
+			g2.drawChars(t.toCharArray(), 0, t.length(), l.getX(), l.getY());
+		}
+	}
+	
 	/**
 	 * Method to draw the background image.
 	 * @param g
@@ -412,17 +444,45 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	
 	public void setBackgroundColor(Color c) {
 		this.bgColor = c;
-		repaint();
+		refresh = true;
 	}
 	
 	public void setCursorColor(Color c, boolean repaint) {
 		this.cursorColor = c;
-		if(repaint) repaint();
+		if(repaint) refresh = true;
 	}
 		
 	public void setVerticalGridDrawer(VerticalGridDrawer v){
 		this.vGrid=v;
 	}
+	
+	public boolean addLabel(String lName, GraphPanelLabel l){
+		if(labelList.containsKey(lName))
+			return false;
+		labelList.put(lName, l);
+		return true;
+	}
+	
+	public boolean addLabel(String lName, String label, String val, int x, int y){
+		GraphPanelLabel l = new GraphPanelLabel(label, val, x, y);
+		return addLabel(lName, l);
+	}
+	
+	public boolean setLabelValue(String lName, String val){
+		if(!labelList.containsKey(lName))
+			return false;
+		labelList.get(lName).setValue(val);
+		return true;
+	}
+	
+	public boolean setLabelColor(String lName, Color c){
+		if(!labelList.containsKey(lName))
+			return false;
+		labelList.get(lName).setColor(c);
+		return true;
+	}
+	
+	
 	
 	// Draw a line with a specific color
 	public void drawLine(double x1, double y1, double x2, double y2, Color color) {
@@ -441,7 +501,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	public void addLine(Line l, boolean repaint) {
 		lines.add(l);
 		if (repaint)
-			this.repaint();
+			this.refresh = true;
 	}
 
 	public Plot getPlot(int plotIndex){
@@ -490,14 +550,14 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			this.dY = (maxY - minY) / 10d;
 		}
 		lastPlot = pIndex;
-		repaint();
+		refresh = true;
 		return lastPlot;
 	}
 	
 	public void removePlot(int index){
 		if(index<0 || index>=plots.size()) return;
 		plots.remove(index);
-		repaint();
+		refresh = true;
 	}
 
 	public int addPlot(double[] x, double[] y, Color c, boolean resize) {
@@ -518,12 +578,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	
 	public void addPoint(double x, double y, Color c) {
 		points.add(new Point(x, y, c));
-		repaint();
+		refresh = true;
 	}
 
 	public void addPoint(double x, double y) {
 		points.add(new Point(x, y));
-		repaint();
+		refresh = true;
 	}
 
 	// Gets the x value in pixel
@@ -544,12 +604,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	public void clearPlots() {
 		plots.clear();
 		lastPlot = -1;
-		repaint();
+		refresh = true;
 	}
 	
 	public void clearPoints() {
 		points.clear();
-		repaint();
+		refresh = true;
 	}
 	
 	// Clears all graphs
@@ -558,7 +618,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		lastPlot = -1;
 		lines.clear();
 		points.clear();
-		repaint();
+		refresh = true;
 	}
 
 	public void fitY() {
@@ -570,7 +630,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		maxY = p.getMaxY();
 		minY = p.getMinY();
 		this.dY = (maxY - minY) / 10d;
-		repaint();
+		refresh = true;
 	}
 
 	public void fitX() {
@@ -582,7 +642,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		maxX = p.getMaxX();
 		minX = p.getMinX();
 		this.dX = (maxX - minX) / 10d;
-		repaint();
+		refresh = true;
 	}
 		
 	public void autoscale(boolean sx, boolean sy) {
@@ -620,12 +680,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		if (rad <= 0)
 			return;
 		this.pointRad = rad;
-		repaint();
+		refresh = true;
 	}
 	
 	public void setPointFill(boolean fillPoint) {
 		this.fillPoint = fillPoint;
-		repaint();
+		refresh = true;
 	}
 		
 	public void setMaxX(double max) {
@@ -692,37 +752,37 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	
 	public void setXAxisLabeler(Labeler l){
 		this.xAxisLabler = l;
-		this.repaint();
+		this.refresh = true;
 	}
 	
 	public void setYAxisLabeler(Labeler l){
 		this.yAxisLabler = l;
-		this.repaint();
+		this.refresh = true;
 	}
 	
 	public void setXCursorLabeler(Labeler l){
 		this.xCursorLabler = l;
-		this.repaint();
+		this.refresh = true;
 	}
 	
 	public void setYCursorLabeler(Labeler l){
 		this.yCursorLabler = l;
-		this.repaint();
+		this.refresh = true;
 	}
 	
 	public void showGrid(boolean grid) {
 		this.grid = grid;
-		this.repaint();
+		this.refresh = true;
 	}
 	
 	public void showVerticalAxis(boolean show){
 		this.drawVerticalAxis = show;
-		repaint();
+		refresh = true;
 	}
 	
 	public void showHorizontalAxis(boolean show){
 		this.drawHorizontalAxis = show;
-		repaint();
+		refresh = true;
 	}
 		
 	public void setAutoRefresh(boolean autoRefresh){
@@ -806,28 +866,28 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		double dx = (maxX - minX) * 0.05;
 		maxX += dx;
 		minX  += dx;
-		repaint();
+		refresh = true;
 	}
 	
 	public void moveLeft(){
 		double dx = (maxX - minX) * 0.05;
 		maxX -= dx;
 		minX  -= dx;
-		repaint();
+		refresh = true;
 	}
 	
 	public void moveUp(){
 		double dy = (maxY - minY) * 0.05;
 		maxY += dy;
 		minY  += dy;
-		repaint();
+		refresh = true;
 	}
 	
 	public void moveDown(){
 		double dy = (maxY - minY) * 0.05;
 		maxY -= dy;
 		minY  -= dy;
-		repaint();
+		refresh = true;
 	}
 	
 	/**
@@ -846,13 +906,13 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		minY += dy*0.5;
 		this.dY = (maxY - minY) / 10d;
 		this.dX = (maxX - minX) / 10d;
-		repaint();
+		refresh = true;
 	}
 	
 	public void setCursorLocation(int x, int y){
 		cX = x;
 		cY = y;
-		repaint();	
+		refresh = true;	
 	}
 	
 	@Override
@@ -919,7 +979,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	@Override
 	public void mouseExited(MouseEvent e) {
 		cursorInWindow = false;
-		repaint();
+		refresh = true;
 	}
 
 	@Override
