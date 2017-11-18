@@ -501,6 +501,16 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		}
 		return setPlot(plots.size(), x, y, c, true);
 	}
+	
+	public void addPoint(double x, double y, Color c) {
+		points.add(new Point(x, y, c));
+		repaint();
+	}
+
+	public void addPoint(double x, double y) {
+		points.add(new Point(x, y));
+		repaint();
+	}
 
 	// Gets the x value in pixel
 	private int xVal(double x) {
