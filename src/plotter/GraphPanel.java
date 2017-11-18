@@ -31,78 +31,78 @@ import javax.swing.JPanel;
 @SuppressWarnings({"serial","unused"})
 public class GraphPanel extends JPanel  implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener{
 		
-	private Dimension dim = new Dimension();
-	private Color bgColor = Color.BLACK;
-	private Color axisColor = Color.RED;
-	private Color gridColor = Color.GRAY;
-	private Color lineColor = Color.BLUE;
+	protected Dimension dim = new Dimension();
+	protected Color bgColor = Color.BLACK;
+	protected Color axisColor = Color.RED;
+	protected Color gridColor = Color.GRAY;
+	protected Color lineColor = Color.BLUE;
 
 	// Grid Variables
-	private boolean grid = false;
-	private boolean dashed = true;
-	private boolean labels = true;
-	private boolean drawAxis = true;
-	private boolean drawVerticalAxis = true;
-	private boolean drawHorizontalAxis = true;
+	protected boolean grid = false;
+	protected boolean dashed = true;
+	protected boolean labels = true;
+	protected boolean drawAxis = true;
+	protected boolean drawVerticalAxis = true;
+	protected boolean drawHorizontalAxis = true;
 
-	private boolean autoRefresh = false;
-	private boolean autoXScroll = false;
+	protected boolean autoRefresh = false;
+	protected boolean autoXScroll = false;
 
-	int gWidth;
-	int gHeight;
+	protected int gWidth;
+	protected int gHeight;
 
 	// Cursor Variables
-	private boolean cursorInWindow 	   = false;
-	private boolean usePermanentCursor = false;
-	private boolean useCursor 		   = true;
-	private boolean useVCursor 		   = false;
-	private boolean useVCursorLabel    = false;
-	private double 	vCursorRoundingVal = 1000;
-	private boolean useHCursor 		   = true;
-	private boolean useHCursorLabel    = true;
-	private double 	hCursorRoundingVal = 1000;
-	private double cX = 0;
-	private double cY = 0;
-	private Color cursorColor = Color.WHITE;
-	private Labeler xCursorLabler = null;
-	private Labeler yCursorLabler = null;
+	protected boolean cursorInWindow 	   = false;
+	protected boolean usePermanentCursor = false;
+	protected boolean useCursor 		   = true;
+	protected boolean useVCursor 		   = false;
+	protected boolean useVCursorLabel    = false;
+	protected double 	vCursorRoundingVal = 1000;
+	protected boolean useHCursor 		   = true;
+	protected boolean useHCursorLabel    = true;
+	protected double 	hCursorRoundingVal = 1000;
+	protected double cX = 0;
+	protected double cY = 0;
+	protected Color cursorColor = Color.WHITE;
+	protected Labeler xCursorLabler = null;
+	protected Labeler yCursorLabler = null;
 
 	// Signal/Window Variables
-	private boolean matchSignal = false;
-	private double maxX = 10;
-	private double minX = -10;
-	private double dX = 1;
-	private double maxY = 10;
-	private double minY = -10;
-	private double dY = 1;
-	private double d2pX = dim.width / (maxX - minX);
-	private double d2pY = dim.height / (maxY - minY);
-	private int originX = 0;
-	private int originY = 0;
-	private int axisX = 0;
-	private int axisY = 0;
-	private Labeler xAxisLabler = null;
-	private Labeler yAxisLabler = null;
-	private VerticalGridDrawer vGrid = null;
+	protected boolean matchSignal = false;
+	protected double maxX = 10;
+	protected double minX = -10;
+	protected double dX = 1;
+	protected double maxY = 10;
+	protected double minY = -10;
+	protected double dY = 1;
+	protected double d2pX = dim.width / (maxX - minX);
+	protected double d2pY = dim.height / (maxY - minY);
+	protected int originX = 0;
+	protected int originY = 0;
+	protected int axisX = 0;
+	protected int axisY = 0;
+	protected Labeler xAxisLabler = null;
+	protected Labeler yAxisLabler = null;
+	protected VerticalGridDrawer vGrid = null;
 
 	// Control Keys
 	boolean cntlrP, altP, lClick, rClick;
 
 	// List of existing lines
-	private final List<Line> lines = Collections.synchronizedList(new ArrayList<Line>());
-	private int lineBufferSize = 22000;// 1024;
+	protected final List<Line> lines = Collections.synchronizedList(new ArrayList<Line>());
+	protected int lineBufferSize = 22000;// 1024;
 
 	// Plots
-	private int lastPlot = 0;
-	private ArrayList<Plot> plots = new ArrayList<>();
+	protected int lastPlot = 0;
+	protected ArrayList<Plot> plots = new ArrayList<>();
 
 	// Points
-	int pointRad = 3;
-	boolean fillPoint = true;
-	private final ArrayList<Point> points = new ArrayList<>();
+	protected int pointRad = 3;
+	protected boolean fillPoint = true;
+	protected final ArrayList<Point> points = new ArrayList<>();
 	
 	// Circle
-	private final ArrayList<Point> circles = new ArrayList<>();
+	protected final ArrayList<Point> circles = new ArrayList<>();
 		
 
 	public GraphPanel(){
@@ -149,7 +149,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		this.init(width, height);
 	}
 		
-		//Method to paint
+	//Method to paint
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
@@ -159,6 +159,14 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		gWidth =gHeight;
 		background(g);
 		    			
+		drawLines(g2);
+		drawPlots(g);
+		drawPoints(g);
+		drawCursor(g);
+		
+	}
+	
+	protected void drawLines(Graphics2D g2){
 		//Loop to draw all lines in the list
 		 for (int i = 0; i<lines.size(); i++) {
 			 Line l = lines.get(i);
@@ -171,29 +179,34 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			 }
 		 }
 		 g2.setStroke(Line.BASIC);
-		 
+	}
+
+	protected void drawPlots(Graphics g){
 		//Loop through all plots to draw all lines in the array
-		 for(int i=0;i<plots.size(); i++){
-			 Plot plot = plots.get(i);
-			 if(plot.color==null) plot.color = lineColor;
-			 g.setColor(plot.color);
-			 int lx=xVal(plot.xPlot[0]+plot.xOffset), ly=yVal(plot.yPlot[0]+plot.yOffset), x, y;
-			 double[] yValues = plot.yPlot;
-			 double[] xValues = plot.xPlot;
-			 for(int p=1; p<plot.getSize(); p++){
-				x=xVal(xValues[p]+plot.xOffset);
-				y=yVal(yValues[p]+plot.yOffset);
-				if(x==lx && y==ly)
+		for (int i = 0; i < plots.size(); i++) {
+			Plot plot = plots.get(i);
+			if (plot.color == null)
+				plot.color = lineColor;
+			g.setColor(plot.color);
+			int lx = xVal(plot.xPlot[0] + plot.xOffset), ly = yVal(plot.yPlot[0] + plot.yOffset), x, y;
+			double[] yValues = plot.yPlot;
+			double[] xValues = plot.xPlot;
+			for (int p = 1; p < plot.getSize(); p++) {
+				x = xVal(xValues[p] + plot.xOffset);
+				y = yVal(yValues[p] + plot.yOffset);
+				if (x == lx && y == ly)
 					continue;
 				if (!((lx > dim.width && x > dim.width) || (lx < 0 && x < 0) || (ly > dim.height && y > dim.height)
 						|| (ly < 0 && y < 0))) {
 					g.drawLine(lx, ly, x, y);
 				}
-				lx=x;
-				ly=y;
-			 }
-		 }
-		 
+				lx = x;
+				ly = y;
+			}
+		}
+	}
+	
+	protected void drawPoints(Graphics g){
 		 //Loop through all the points
 		 if(fillPoint){
 			 for(int i=0; i<points.size(); i++){
@@ -210,7 +223,9 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 					 g.drawOval(xVal(p.x)-pointRad/2, yVal(p.y)-pointRad/2, pointRad, pointRad);
 			 }
 		 }
-		 
+	}
+	
+	protected void drawCursor(Graphics g){
 		 //Draw the cursor
 		 if(useCursor && (cursorInWindow || usePermanentCursor)){
 			 g.setColor(cursorColor);
@@ -235,14 +250,13 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 				 g.drawString(label, (int)cX+2, (int)cY);
 			 }
 		 }
-		
 	}
 		
 	/**
 	 * Method to draw the background image.
 	 * @param g
 	 */
-	private void background(Graphics g) {
+	protected void background(Graphics g) {
 		// Background
 		g.setColor(bgColor);
 		g.fillRect(0, 0, dim.width, dim.height);
@@ -513,12 +527,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 
 	// Gets the x value in pixel
-	private int xVal(double x) {
+	protected int xVal(double x) {
 		return originX + (int) (x * d2pX);
 	}
 
 	// Gets the y value in pixel
-	private int yVal(double y) {
+	protected int yVal(double y) {
 		return originY - (int) (y * d2pY);
 	}
 
@@ -719,7 +733,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		this.autoXScroll = autoScroll;
 	}
 		
-	private void setAxisCordinates() {
+	protected void setAxisCordinates() {
 		setD2P();
 		originX = (int) round(-minX * d2pX, 0); // For drawing the Y-Axis
 		originY = (int) round(maxY * d2pY, 0); // For drawing the X-Axis
@@ -735,7 +749,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			axisY = 0;
 	}
 		
-	private void setD2P() {
+	protected void setD2P() {
 		d2pX = dim.width / (maxX - minX);
 		d2pY = dim.height / (maxY - minY);
 	}

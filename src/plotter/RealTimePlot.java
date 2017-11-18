@@ -1,23 +1,24 @@
 package plotter;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 public class RealTimePlot extends Plot{
 	
-	protected LinkedList<Double> xPlot;
-	protected LinkedList<Double> yPlot;
+	protected List<Double> xPlot;
+	protected List<Double> yPlot;
 	protected double   minX, maxX, minY, maxY, lastX, lastY;
 	protected double   xOffset;
 	protected double   yOffset;
 	protected Color    color;
 	
 	public RealTimePlot(double[] x, double[] y, double xO, double yO, Color c){
-		this.xPlot = new LinkedList<>(Arrays.asList(ArrayUtils.toObject(x)));
-		this.yPlot = new LinkedList<>(Arrays.asList(ArrayUtils.toObject(y)));
+		this.xPlot = new ArrayList<>(Arrays.asList(ArrayUtils.toObject(x)));
+		this.yPlot = new ArrayList<>(Arrays.asList(ArrayUtils.toObject(y)));
 		this.xOffset = xO;
 		this.yOffset = yO;
 		this.color = c;
