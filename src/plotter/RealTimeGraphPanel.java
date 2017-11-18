@@ -31,7 +31,7 @@ public class RealTimeGraphPanel extends GraphPanel {
 				try{
 					x = xValues.get(p) + plot.xOffset;
 					y = yValues.get(p) + plot.yOffset;
-				}catch(NullPointerException e){
+				}catch(NullPointerException | java.lang.IndexOutOfBoundsException e){
 					continue;
 				}
 				if(x<minX || x>maxX)

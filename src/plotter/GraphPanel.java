@@ -262,15 +262,17 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			 int hYOffset = 0;
 			 if(useVCursorLabel) hYOffset = 12;
 			 if(useHCursorLabel){
-				 double xVal = Math.round(cX/d2pX*hCursorRoundingVal)/hCursorRoundingVal+minX;
-				 String label = "X: "+xVal;
+				 double xVal 	= cX/d2pX+minX;
+				 double xRound 	= Math.round(xVal*hCursorRoundingVal)/hCursorRoundingVal;
+				 String label = "X: "+xRound;
 				 if(xCursorLabler!=null) label = xCursorLabler.getLabel(xVal);
 				 g.drawString(label, (int)cX+2, (int)cY-hYOffset);
 			 }
 			 if(useVCursorLabel){
-				 double yVal = Math.round(cY/d2pY*vCursorRoundingVal)/vCursorRoundingVal+minY;
+				 double yVal 	= cY/d2pY+minY;
+				 double yRound 	= Math.round(yVal*vCursorRoundingVal)/vCursorRoundingVal;
 				 String label = "Y: "+yVal;
-				 if(yCursorLabler!=null) label = yCursorLabler.getLabel(yVal);
+				 if(yCursorLabler!=null) label = yCursorLabler.getLabel(yRound);
 				 g.drawString(label, (int)cX+2, (int)cY);
 			 }
 		 }
