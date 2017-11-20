@@ -479,6 +479,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		refresh=true;
 	}
 	
+	public Rectangle getMouseSelection(){
+		if(mouseSelection==null)
+			return null;
+		return (Rectangle) mouseSelection.clone();
+	}
+	
 	public void setMouseSelectionColor(int r, int g, int b, int a){
 		this.mouseSelectionColor = new Color(r, g, b, a);
 		refresh=true;
