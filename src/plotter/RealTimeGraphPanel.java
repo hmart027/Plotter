@@ -114,4 +114,16 @@ public class RealTimeGraphPanel extends GraphPanel {
 			refresh = true;
 		}
 	}
+	
+	public void gotoMaxX(){
+		double max = 0;
+		double winSize = maxX-minX;
+		for(int i=0; i<plots.size(); i++){
+			double t = ((RealTimePlot)(plots.get(i))).getMaxX();
+			if(t>max) max = t;
+		}
+		maxX = max + dX;
+		minX = max-winSize;
+		refresh = true;
+	}
 }

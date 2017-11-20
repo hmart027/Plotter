@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -70,6 +71,9 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	protected Color cursorColor = Color.WHITE;
 	protected Labeler xCursorLabler = null;
 	protected Labeler yCursorLabler = null;
+	
+	protected Rectangle mouseSelection;
+	protected Color mouseSelectionColor = new Color(255, 0, 0, 100);
 
 	// Signal/Window Variables
 	protected boolean matchSignal = false;
@@ -176,8 +180,8 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
-		setAxisCordinates();
 		setD2P();
+		setAxisCordinates();
 		gHeight=dim.height;
 		gWidth =gHeight;
 		background(g);
@@ -187,6 +191,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		drawPoints(g);
 		drawCursor(g);
 		drawLabels(g2);
+		drawSelection(g2);
 		
 	}
 		
@@ -276,6 +281,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 				 g.drawString(label, (int)cX+2, (int)cY);
 			 }
 		 }
+	}
+	
+	protected void drawSelection(Graphics2D g2){
+		g2.setColor(mouseSelectionColor);
+		if(mouseSelection!=null)
+			g2.fill(mouseSelection);
 	}
 	
 	protected void drawLabels(Graphics2D g2){
@@ -456,6 +467,28 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		
 	public void setVerticalGridDrawer(VerticalGridDrawer v){
 		this.vGrid=v;
+	}
+	
+	public void setMouseSelection(int x0, int y0, int x1, int y1){
+		this.mouseSelection = new Rectangle(x0, y0, x1-x0, y1-y0);
+		refresh=true;
+	}
+	
+	public void setMouseSelection(Rectangle r){
+		this.mouseSelection = r;
+		refresh=true;
+	}
+	
+	public void setMouseSelectionColor(int r, int g, int b, int a){
+		this.mouseSelectionColor = new Color(r, g, b, a);
+		refresh=true;
+	}
+	
+	public void setMouseSelectionColor(Color c){
+		if(c==null)
+			return;
+		this.mouseSelectionColor = c;
+		refresh=true;
 	}
 	
 	public boolean addLabel(String lName, GraphPanelLabel l){
@@ -796,7 +829,6 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 		
 	protected void setAxisCordinates() {
-		setD2P();
 		originX = (int) round(-minX * d2pX, 0); // For drawing the Y-Axis
 		originY = (int) round(maxY * d2pY, 0); // For drawing the X-Axis
 		axisX = originX;
@@ -812,10 +844,11 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 		
 	protected void setD2P() {
-		d2pX = dim.width / (maxX - minX);
-		d2pY = dim.height / (maxY - minY);
+		d2pX = (double)dim.width / (maxX - minX);
+		d2pY = (double)dim.height / (maxY - minY);
 	}
 		
+	//this method is not efficient
 	public double round(double number, double digits) {
 		double n = Math.pow(10, digits + 1);
 		double out = (long) (number * n);
@@ -838,12 +871,28 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		return this.minX;
 	}
 	
+	public double getDX(){
+		return this.dX;
+	}
+	
+	public double getD2PX(){
+		return this.d2pX;
+	}
+	
 	public double getMaxY(){
 		return this.maxY;
 	}
 	
 	public double getMinY(){
 		return this.minY;
+	}
+	
+	public double getDY(){
+		return this.dY;
+	}
+	
+	public double getD2PY(){
+		return this.d2pY;
 	}
 	
 	public boolean isRefreshing(){
@@ -863,33 +912,37 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 			return true;
 		return false;
 	}
-			
+		
+	public void moveX(double d){
+		maxX += d;
+		minX  += d;
+		refresh = true;
+	}
+	
+	public void moveY(double d){
+		maxY += d;
+		minY  += d;
+		refresh = true;
+	}
+	
 	public void moveRight(){
 		double dx = (maxX - minX) * 0.05;
-		maxX += dx;
-		minX  += dx;
-		refresh = true;
+		moveX(dx);
 	}
 	
 	public void moveLeft(){
 		double dx = (maxX - minX) * 0.05;
-		maxX -= dx;
-		minX  -= dx;
-		refresh = true;
+		moveX(-dx);
 	}
 	
 	public void moveUp(){
 		double dy = (maxY - minY) * 0.05;
-		maxY += dy;
-		minY  += dy;
-		refresh = true;
+		moveY(dy);
 	}
 	
 	public void moveDown(){
 		double dy = (maxY - minY) * 0.05;
-		maxY -= dy;
-		minY  -= dy;
-		refresh = true;
+		moveY(-dy);
 	}
 	
 	/**
@@ -1013,6 +1066,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		setCursorLocation(e.getX(), e.getY());
 	}
 
 	@Override
