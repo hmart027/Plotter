@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 public class RealTimePlot extends Plot{
 	
 	protected List<Double> xPlot;
@@ -17,8 +15,8 @@ public class RealTimePlot extends Plot{
 	protected Color    color;
 	
 	public RealTimePlot(double[] x, double[] y, double xO, double yO, Color c){
-		this.xPlot = new ArrayList<>(Arrays.asList(ArrayUtils.toObject(x)));
-		this.yPlot = new ArrayList<>(Arrays.asList(ArrayUtils.toObject(y)));
+		this.xPlot = toDoubleArray(x);
+		this.yPlot = toDoubleArray(y);
 		this.xOffset = xO;
 		this.yOffset = yO;
 		this.color = c;
@@ -35,6 +33,14 @@ public class RealTimePlot extends Plot{
 			if(yV<minY) minY = yV;
 			if(yV>maxY) maxY = yV;
 		}
+	}
+	
+	private ArrayList<Double> toDoubleArray(double[] x){
+		ArrayList<Double> out = new ArrayList<>();
+		for(double d: x){
+			out.add(d);
+		}
+		return out;
 	}
 	
 	public RealTimePlot(double[] x, double[] y, Color c){
