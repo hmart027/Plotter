@@ -72,7 +72,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	protected Labeler xCursorLabler = null;
 	protected Labeler yCursorLabler = null;
 	
-	protected Rectangle mouseSelection;
+	protected MouseSelection mouseSelection;
 	protected Color mouseSelectionColor = new Color(255, 0, 0, 100);
 
 	// Signal/Window Variables
@@ -286,7 +286,10 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	protected void drawSelection(Graphics2D g2){
 		g2.setColor(mouseSelectionColor);
 		if(mouseSelection!=null)
-			g2.fill(mouseSelection);
+			g2.fill(new Rectangle((int)((mouseSelection.getX()-minX)*d2pX), 
+					(int)((mouseSelection.getY()-minY)*d2pY), 
+					(int)(mouseSelection.getWidth()*d2pX), 
+					(int)(mouseSelection.getHeight()*d2pY)));
 	}
 	
 	protected void drawLabels(Graphics2D g2){
@@ -470,19 +473,35 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 	
 	public void setMouseSelection(int x0, int y0, int x1, int y1){
-		this.mouseSelection = new Rectangle(x0, y0, x1-x0, y1-y0);
+		double c1 = 1d/d2pX;
+		double c2 = 1d/d2pY;
+		this.mouseSelection = new MouseSelection(x0*c1+minX, y0*c2+minY, (x1-x0)*c1, (y1-y0)*c2);
 		refresh=true;
 	}
 	
-	public void setMouseSelection(Rectangle r){
+	public void setMouseSelection(double x0, double y0, double x1, double y1){
+		this.mouseSelection = new MouseSelection(x0, y0, x1-x0, y1-y0);
+		refresh=true;
+	}
+	
+	public void setMouseSelection(MouseSelection r){
 		this.mouseSelection = r;
 		refresh=true;
 	}
 	
-	public Rectangle getMouseSelection(){
+	public MouseSelection getMouseSelection(){
 		if(mouseSelection==null)
 			return null;
-		return (Rectangle) mouseSelection.clone();
+		return mouseSelection;
+	}
+	
+	public Rectangle getMouseSelectionWindow(){
+		if(mouseSelection==null)
+			return null;
+		return new Rectangle((int)((mouseSelection.getX()-minX)*d2pX), 
+				(int)((mouseSelection.getY()-minY)*d2pY), 
+				(int)(mouseSelection.getWidth()*d2pX), 
+				(int)(mouseSelection.getHeight()*d2pY));
 	}
 	
 	public void setMouseSelectionColor(int r, int g, int b, int a){
