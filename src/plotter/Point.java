@@ -1,8 +1,10 @@
 package plotter;
 
 import java.awt.Color;
+import java.io.Serializable;
 
-public class Point{
+public class Point implements Serializable{
+	private static final long serialVersionUID = 1429271601402013852L;
 	double x;
 	double y;
 	Color c = Color.BLUE;
