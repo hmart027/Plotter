@@ -10,6 +10,8 @@ public class RealTimeGraphPanel extends GraphPanel {
 
 	private int lastPlot = 0;
 	
+	public Color DEFAULT_PLOT_COLOR = Color.BLACK;
+	
 	public RealTimeGraphPanel(){}
 		
 	@Override
@@ -90,19 +92,53 @@ public class RealTimeGraphPanel extends GraphPanel {
 		return lastPlot;
 	}
 	
-	public void addPoint(int plotIndex, double x, double y, boolean autoscroll){
-		((RealTimePlot)(plots.get(plotIndex))).addPoint(x, y);
-		if(x>minX && x<maxX){
-			double dx = x-(maxX-dX);
-			if(autoscroll && dx>0){
-				minX += dx;
-				maxX += dx;
-			}
+	public int addPlotPoint(int plotIndex, double x, double y, boolean autoscroll, Color c){
+		RealTimePlot p;
+		if(plotIndex>=0 && plotIndex<plots.size()){
+			p = (RealTimePlot)(plots.get(plotIndex));
+			p.addPoint(x, y);
+			p.color = c;
+		}else{
+			p = new RealTimePlot(x, y, c);
+			plots.add(p);
+			plotIndex=plots.size()-1;
+		}
+		double dx = x - (maxX - dX);
+		if (autoscroll && dx > 0) {
+			minX += dx;
+			maxX += dx;
 			refresh = true;
 		}
+		double dy = y - (maxY - dY);
+		if (autoscroll && dY > 0) {
+			System.out.println("Scrolling");
+			minY += dy;
+			maxY += dy;
+			refresh = true;
+		}
+		return plotIndex;
 	}
 	
-	public void addPoints(double x, double[] y, boolean autoscroll){
+	public int addPlotPoint(int plotIndex, double x, double y, boolean autoscroll){
+		return  addPlotPoint( plotIndex, x, y, autoscroll, DEFAULT_PLOT_COLOR);
+	}
+	
+	public int addPlotPoint(String plotName, double x, double y, boolean autoscroll, Color c){
+		int pIndex = -1;
+		if(plotsByName.containsKey(plotName)){
+			pIndex = addPlotPoint(plotsByName.get(plotName), x, y, autoscroll, c);
+		}else{
+			pIndex = addPlotPoint(pIndex, x, y, autoscroll, c);
+			plotsByName.put(plotName, pIndex);
+		}
+		return pIndex;
+	}
+	
+	public int addPlotPoint(String plotName, double x, double y, boolean autoscroll){
+		return addPlotPoint( plotName, x, y, autoscroll, DEFAULT_PLOT_COLOR);
+	}
+	
+	public void addPlotPoint(double x, double[] y, boolean autoscroll){
 		for(int i=0; i<plots.size(); i++)
 			((RealTimePlot)(plots.get(i))).addPoint(x, y[i]);
 		if(x>minX && x<maxX){
@@ -126,4 +162,5 @@ public class RealTimeGraphPanel extends GraphPanel {
 		minX = max-winSize;
 		refresh = true;
 	}
+		
 }

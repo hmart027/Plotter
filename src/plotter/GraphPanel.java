@@ -103,6 +103,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	// Plots
 	protected int lastPlot = 0;
 	protected ArrayList<Plot> plots = new ArrayList<>();
+	protected TreeMap<String,Integer> plotsByName = new TreeMap<>();
 
 	// Points
 	protected int pointRad = 3;
@@ -563,11 +564,41 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		if (repaint)
 			this.refresh = true;
 	}
+	
+	public boolean setPlotName(int plotIndex, String plotName){
+		if(plotIndex<0 || plotIndex>=plots.size())
+			return false;
+		if(plotsByName.containsKey(plotName))
+			return false;
+		plotsByName.put(plotName, plotIndex);
+		return true;
+	}
 
 	public Plot getPlot(int plotIndex){
 		if(plotIndex<0 || plotIndex>=plots.size())
 			return null;
 		return plots.get(plotIndex);
+	}
+	
+	public Plot getPlot(String plotName){
+		if(plotName == null || !plotsByName.containsKey(plotName))
+			return null;
+		return plots.get(plotsByName.get(plotName));
+	}
+	
+	public int setPlot(String plotName, double[] x, double[] y, Color c, boolean resize) {
+		return setPlot(plotName, 0, 0, x, y, c, resize);
+	}
+	
+	public int setPlot(String plotName, double xOffset, double yOffset, double[] x, double[] y, Color c, boolean resize){
+		int pIndex = -1;
+		if(plotsByName.containsKey(plotName)){
+			pIndex = setPlot(plotsByName.get(plotName), xOffset, yOffset, x, y, c, resize);
+		}else{
+			pIndex = setPlot(pIndex, xOffset, yOffset, x, y, c, resize);
+			plotsByName.put(plotName, pIndex);
+		}
+		return pIndex;
 	}
 	
 	public int setPlot(int pIndex, double[] x, double[] y, Color c, boolean resize) {
@@ -617,6 +648,12 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	public void removePlot(int index){
 		if(index<0 || index>=plots.size()) return;
 		plots.remove(index);
+		refresh = true;
+	}
+	
+	public void removePlot(String plotName){
+		if(plotName == null || !plotsByName.containsKey(plotName)) return;
+		plots.remove(plotsByName.get(plotName));
 		refresh = true;
 	}
 

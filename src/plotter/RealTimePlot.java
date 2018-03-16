@@ -2,17 +2,35 @@ package plotter;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RealTimePlot extends Plot{
 	
 	protected List<Double> xPlot;
 	protected List<Double> yPlot;
-	protected double   minX, maxX, minY, maxY, lastX, lastY;
-	protected double   xOffset;
-	protected double   yOffset;
-	protected Color    color;
+	
+	public RealTimePlot(double x, double y){
+		this(x, y, 0, 0, Color.BLACK);
+	}
+	
+	public RealTimePlot(double x, double y, Color c){
+		this(x, y, 0, 0, c);
+	}
+	
+	public RealTimePlot(double x, double y, double xO, double yO, Color c){
+		this.xPlot = new ArrayList<>();
+		this.xPlot.add(x);
+		this.yPlot = new ArrayList<>();
+		this.yPlot.add(y);
+		this.xOffset = xO;
+		this.yOffset = yO;
+		this.color = c;
+
+		minX = x;
+		maxX = x;
+		minY = y;
+		maxY = y;
+	}
 	
 	public RealTimePlot(double[] x, double[] y, double xO, double yO, Color c){
 		this.xPlot = toDoubleArray(x);
