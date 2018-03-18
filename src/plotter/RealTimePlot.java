@@ -66,14 +66,16 @@ public class RealTimePlot extends Plot{
 	}
 	
 	public void addPoint(double x, double y){
-		xPlot.add(x);
-		yPlot.add(y);
-		if(x<minX) minX = x;
-		if(x>maxX) maxX = x;
-		if(y<minY) minY = y;
-		if(y>maxY) maxY = y;
 		lastX = x;
 		lastY = y;
+		xPlot.add(x);
+		yPlot.add(y);
+		if(xPlot.size()>1){
+			if(x<minX) minX = x;
+			if(x>maxX) maxX = x;
+			if(y<minY) minY = y;
+			if(y>maxY) maxY = y;
+		}
 	}
 	
 	public int getSize(){
@@ -102,5 +104,17 @@ public class RealTimePlot extends Plot{
 	
 	public double getLastY(){
 		return lastY;
+	}
+
+	public void clear(){
+		this.xPlot = new ArrayList<>();
+		this.yPlot = new ArrayList<>();
+		this.xOffset = 0;
+		this.yOffset = 0;
+		this.color = Color.BLACK;
+		minX = 0;
+		maxX = 0;
+		minY = 0;
+		maxY = 0;
 	}
 }

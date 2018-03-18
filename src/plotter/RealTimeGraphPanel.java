@@ -111,7 +111,6 @@ public class RealTimeGraphPanel extends GraphPanel {
 		}
 		double dy = y - (maxY - dY);
 		if (autoscroll && dY > 0) {
-			System.out.println("Scrolling");
 			minY += dy;
 			maxY += dy;
 			refresh = true;
@@ -161,6 +160,20 @@ public class RealTimeGraphPanel extends GraphPanel {
 		maxX = max + dX;
 		minX = max-winSize;
 		refresh = true;
+	}
+	
+	public void clearPlot(int plotIndex){
+		RealTimePlot p = (RealTimePlot)(plots.get(plotIndex));
+		p.clear();
+	}
+	
+	public boolean clearPlot(String plotName){
+		if(plotsByName.containsKey(plotName)){
+			clearPlot(plotsByName.get(plotName));
+			return true;
+		}else{
+			return false;
+		}
 	}
 		
 }
