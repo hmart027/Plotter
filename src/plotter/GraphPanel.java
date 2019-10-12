@@ -743,6 +743,8 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 	}
 		
 	public void autoscale(boolean sx, boolean sy) {
+		if(lines.size()==0)
+			return;
 		double maxX = lines.get(0).x1;
 		double maxY = lines.get(0).y1;
 		double minX = lines.get(0).x2;
