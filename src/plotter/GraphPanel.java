@@ -18,6 +18,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -27,8 +30,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+
 
 @SuppressWarnings({"serial","unused"})
 public class GraphPanel extends JPanel  implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener{
@@ -1160,5 +1165,17 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 
 	public void useVerticalCursorLabler(boolean use) {
 		useVCursorLabel = use;
+	}
+	
+	public void savePlot(String saveTo) {
+		BufferedImage img = new BufferedImage (this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = img.createGraphics ();
+		this.paintAll(g2d);
+		g2d.dispose();
+		try{
+            ImageIO.write ( img, "png", new File ( "C:\\image.png" ) );
+        }catch ( IOException e ){
+            e.printStackTrace ();
+        }
 	}
 }

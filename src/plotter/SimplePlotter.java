@@ -3,8 +3,6 @@ package plotter;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
-import javax.swing.JPanel;
-
 import main.Window;
 import plotter.GraphPanel;
 
@@ -34,6 +32,10 @@ public class SimplePlotter extends GraphPanel{
     public void setTitle(String title){
     	this.window.setTitle(title);
     }
+    
+    public void setResizable(boolean res) {
+    	window.setResizable(res);
+    }
 	
 	// Method to create the application GUI
 	private void creatGUI() {
@@ -44,19 +46,9 @@ public class SimplePlotter extends GraphPanel{
 		int width = wndSize.width;
 		int height = wndSize.height;
 		
-//		System.out.println(height+", "+width);
-		
 		double sizeFactor = 0.30;
 		
 		height = height-50;
-		
-//		if(width>height){
-//			width = height;
-//			height = height-50;
-//		}
-//		if(height>width){
-//			height = width;
-//		}
 		
 		width 	*= sizeFactor;
 		height 	*= sizeFactor;
@@ -75,18 +67,10 @@ public class SimplePlotter extends GraphPanel{
 		Dimension dim = window.getContentPane().getSize();
 		
 		this.init(dim.width,dim.height-2); // Pane containing filled rectangles
-						
-		//Adds the background picture for the first time
-		JPanel panel = new JPanel();
-		panel.setPreferredSize(dim);
-		panel.add(this);
 		
-		window.getContentPane().add(panel); 
+		window.setContentPane(this);
 		window.setResizable(false);		// Prevents resizing
 		window.pack();
-				
-//		System.out.println("Width:  "+pane.dim.width);
-//		System.out.println("Heigth: "+pane.dim.height);
 
 	}
 	
