@@ -280,7 +280,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 				 g.drawString(label, (int)cX+2, (int)cY-hYOffset);
 			 }
 			 if(useVCursorLabel){
-				 double yVal 	= cY/d2pY+minY;
+				 double yVal 	= maxY-cY/d2pY;
 				 double yRound 	= Math.round(yVal*vCursorRoundingVal)/vCursorRoundingVal;
 				 String label = "Y: "+yVal;
 				 if(yCursorLabler!=null) label = yCursorLabler.getLabel(yRound);
@@ -1173,7 +1173,7 @@ public class GraphPanel extends JPanel  implements KeyListener, MouseListener, M
 		this.paintAll(g2d);
 		g2d.dispose();
 		try{
-            ImageIO.write ( img, "png", new File ( "C:\\image.png" ) );
+            ImageIO.write ( img, "png", new File (saveTo ) );
         }catch ( IOException e ){
             e.printStackTrace ();
         }
